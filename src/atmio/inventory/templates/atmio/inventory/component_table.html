@@ -1,13 +1,22 @@
 {% for component in components %}
 <tr>
-  <td>{{ component.identifier }}</td>
-  <td>{{ component.inventory_level.name }}</td>
-  <td>{{ component.description }}</td>
+    <td>{{ component.identifier }}</td>
+    <td>{{ component.inventory_level.name }}</td>
+    <td>{{ component.description }}</td>
 </tr>
 {% empty %}
 <tr>
-  <td colspan="3" class="text-center text-muted">
-    No components found
-  </td>
+    <td colspan="3" class="text-center text-muted">No components found</td>
 </tr>
 {% endfor %}
+
+{% if page_obj.has_next %}
+<tr id="load-more-row">
+    <td colspan="3" class="text-center text-muted">
+        <div hx-get="{% url 'component_table' %}?page={{ page_obj.next_page_number }}" hx-target="#load-more-row"
+            hx-swap="outerHTML" hx-include="#table-controls" hx-trigger="revealed">
+            Loading more...
+        </div>
+    </td>
+</tr>
+{% endif %}

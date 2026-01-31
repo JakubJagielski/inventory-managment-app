@@ -1,5 +1,8 @@
 from django.shortcuts import render
+from django.core.paginator import Paginator
 from .models import Component, InventoryLevel
+
+PAGINATION_LIMIT = 10
 
 
 def _get_or_post_query_param(request, key: str) -> str | None:
@@ -14,36 +17,40 @@ def component_list(request):
     )
 
 
-def component_table(request):
-    sort = _get_or_post_query_param(request=request, key="sort") or "id"
-    direction = _get_or_post_query_param(request=request, key="dir") or "asc"
-    filter_identifier = _get_or_post_query_param(request=request, key="filter_identifier") or ""
-    filter_inventory_level = _get_or_post_query_param(request=request, key="filter_inventory_level") or ""
 
-    sort_map = {"identifier": "identifier",
-                "inventory_level": "inventory_level__name"}
+def component_table(request):
+    sort = _get_or_post_query_param(request, key="sort") or "id"
+    direction = _get_or_post_query_param(request, key="dir") or "asc"
+    filter_identifier = _get_or_post_query_param(request, key="filter_identifier") or ""
+    filter_inventory_level = _get_or_post_query_param(request, key="filter_inventory_level") or ""
+    page_number = _get_or_post_query_param(request, key="page") or 1
+
+    sort_map = {"identifier": "identifier", "inventory_level": "inventory_level__name"}
     order_by = sort_map.get(sort, "id")
-    
     if direction == "desc":
         order_by = f"-{order_by}"
 
-    components = Component.objects.select_related("inventory_level").all()
+    qs = Component.objects.select_related("inventory_level").all()
 
     if filter_identifier:
-        components = components.filter(identifier__icontains=filter_identifier)
-
+        qs = qs.filter(identifier__icontains=filter_identifier)
     if filter_inventory_level:
-        components = components.filter(inventory_level_id=filter_inventory_level)
+        qs = qs.filter(inventory_level_id=filter_inventory_level)
 
-    components = components.order_by(order_by)
+    qs = qs.order_by(order_by)
+
+    paginator = Paginator(qs, PAGINATION_LIMIT)
+    page_obj = paginator.get_page(page_number)
 
     return render(request, "atmio/inventory/component_table.html", {
-        "components": components,
+        "components": page_obj.object_list,
+        "page_obj": page_obj,
         "current_sort": sort,
         "current_dir": direction,
         "current_filter_identifier": filter_identifier,
         "current_inventory_level": filter_inventory_level
     })
+
 
 def component_create(request):
     inventory_levels = InventoryLevel.objects.all()
