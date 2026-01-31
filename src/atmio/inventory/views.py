@@ -2,6 +2,9 @@ from django.shortcuts import render
 from .models import Component, InventoryLevel
 
 
+def _get_or_post_query_param(request, key: str) -> str | None:
+    return request.GET.get(key) or request.POST.get(key)
+
 def component_list(request):
     inventory_levels = InventoryLevel.objects.all()
     return render(
@@ -12,14 +15,15 @@ def component_list(request):
 
 
 def component_table(request):
-    sort = request.GET.get("sort", "id")
-    direction = request.GET.get("dir", "asc")
-    filter_identifier = request.GET.get("filter_identifier", "")
-    filter_inventory_level = request.GET.get("filter_inventory_level", "")
+    sort = _get_or_post_query_param(request=request, key="sort") or "id"
+    direction = _get_or_post_query_param(request=request, key="dir") or "asc"
+    filter_identifier = _get_or_post_query_param(request=request, key="filter_identifier") or ""
+    filter_inventory_level = _get_or_post_query_param(request=request, key="filter_inventory_level") or ""
 
     sort_map = {"identifier": "identifier",
                 "inventory_level": "inventory_level__name"}
     order_by = sort_map.get(sort, "id")
+    
     if direction == "desc":
         order_by = f"-{order_by}"
 
@@ -27,6 +31,7 @@ def component_table(request):
 
     if filter_identifier:
         components = components.filter(identifier__icontains=filter_identifier)
+
     if filter_inventory_level:
         components = components.filter(inventory_level_id=filter_inventory_level)
 
