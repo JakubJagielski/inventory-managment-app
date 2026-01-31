@@ -36,12 +36,15 @@
     </div>
   </div>
 
-  <!-- 🔑 Wrap filters in a form -->
-  <form id="filters-form"
+  <!-- Filters + hidden sort -->
+  <form id="table-controls"
         hx-get="{% url 'component_table' %}"
         hx-target="#component-table-body"
+        hx-swap="innerHTML"
         hx-trigger="input delay:200ms, change">
+    
     <div class="row mb-3 g-2">
+      <!-- Identifier filter -->
       <div class="col-md-6">
         <input type="text"
                name="filter_identifier"
@@ -50,6 +53,7 @@
                value="{{ current_filter_identifier|default:'' }}">
       </div>
 
+      <!-- Inventory level filter -->
       <div class="col-md-6">
         <select name="filter_inventory_level" class="form-select">
           <option value="">All inventory levels</option>
@@ -62,6 +66,10 @@
         </select>
       </div>
     </div>
+
+    <!-- Hidden sort fields -->
+    <input type="hidden" name="sort" value="{{ current_sort|default:'' }}">
+    <input type="hidden" name="dir" value="{{ current_dir|default:'asc' }}">
   </form>
 
   <!-- Table -->
@@ -69,13 +77,13 @@
     <thead>
       <tr>
         <th>
-          <button type="submit"
-                  name="sort"
-                  value="identifier"
+          <button type="button"
+                  class="btn btn-link p-0"
                   hx-get="{% url 'component_table' %}"
                   hx-target="#component-table-body"
                   hx-swap="innerHTML"
-                  class="btn btn-link p-0">
+                  hx-include="#table-controls"
+                  hx-vals='{"sort":"identifier","dir":"{% if current_sort == "identifier" and current_dir == "asc" %}desc{% else %}asc{% endif %}"}'>
             Identifier
             {% if current_sort == "identifier" %}
               {% if current_dir == "desc" %}↓{% else %}↑{% endif %}
@@ -83,13 +91,13 @@
           </button>
         </th>
         <th>
-          <button type="submit"
-                  name="sort"
-                  value="inventory_level"
+          <button type="button"
+                  class="btn btn-link p-0"
                   hx-get="{% url 'component_table' %}"
                   hx-target="#component-table-body"
                   hx-swap="innerHTML"
-                  class="btn btn-link p-0">
+                  hx-include="#table-controls"
+                  hx-vals='{"sort":"inventory_level","dir":"{% if current_sort == "inventory_level" and current_dir == "asc" %}desc{% else %}asc{% endif %}"}'>
             Inventory Level
             {% if current_sort == "inventory_level" %}
               {% if current_dir == "desc" %}↓{% else %}↑{% endif %}
