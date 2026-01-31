@@ -31,89 +31,99 @@
   <div id="create-component-modal" class="modal fade" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
-        <!-- HTMX injects form here -->
+        <!-- HTMX injects create form here -->
       </div>
     </div>
   </div>
 
-  <!-- Filters + hidden sort -->
-  <form id="table-controls"
-        hx-get="{% url 'component_table' %}"
-        hx-target="#component-table-body"
-        hx-swap="innerHTML"
-        hx-trigger="input delay:200ms, change">
-    
-    <div class="row mb-3 g-2">
-      <!-- Identifier filter -->
-      <div class="col-md-6">
-        <input type="text"
-               name="filter_identifier"
-               class="form-control"
-               placeholder="Filter by identifier..."
-               value="{{ current_filter_identifier|default:'' }}">
-      </div>
+  <!-- Table controls -->
+<form id="table-controls"
+      hx-get="{% url 'component_table' %}"
+      hx-target="#component-table-body"
+      hx-swap="innerHTML"
+      hx-trigger="input delay:200ms, change">
 
-      <!-- Inventory level filter -->
-      <div class="col-md-6">
-        <select name="filter_inventory_level" class="form-select">
-          <option value="">All inventory levels</option>
-          {% for lvl in inventory_levels %}
-            <option value="{{ lvl.id }}"
-              {% if lvl.id|stringformat:"s" == current_inventory_level %}selected{% endif %}>
-              {{ lvl.name }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
+  <div class="row mb-3 g-2">
+    <div class="col-md-6">
+      <input type="text"
+             name="filter_identifier"
+             class="form-control"
+             placeholder="Filter by identifier..."
+             value="{{ current_filter_identifier|default:'' }}">
     </div>
 
-    <!-- Hidden sort fields -->
-    <input type="hidden" name="sort" value="{{ current_sort|default:'' }}">
-    <input type="hidden" name="dir" value="{{ current_dir|default:'asc' }}">
-  </form>
+    <div class="col-md-6">
+      <select name="filter_inventory_level" class="form-select">
+        <option value="">All inventory levels</option>
+        {% for lvl in inventory_levels %}
+          <option value="{{ lvl.id }}"
+            {% if lvl.id|stringformat:"s" == current_inventory_level %}selected{% endif %}>
+            {{ lvl.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
 
-  <!-- Table -->
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>
-          <button type="button"
-                  class="btn btn-link p-0"
-                  hx-get="{% url 'component_table' %}"
-                  hx-target="#component-table-body"
-                  hx-swap="innerHTML"
-                  hx-include="#table-controls"
-                  hx-vals='{"sort":"identifier","dir":"{% if current_sort == "identifier" and current_dir == "asc" %}desc{% else %}asc{% endif %}"}'>
-            Identifier
-            {% if current_sort == "identifier" %}
-              {% if current_dir == "desc" %}↓{% else %}↑{% endif %}
-            {% endif %}
-          </button>
-        </th>
-        <th>
-          <button type="button"
-                  class="btn btn-link p-0"
-                  hx-get="{% url 'component_table' %}"
-                  hx-target="#component-table-body"
-                  hx-swap="innerHTML"
-                  hx-include="#table-controls"
-                  hx-vals='{"sort":"inventory_level","dir":"{% if current_sort == "inventory_level" and current_dir == "asc" %}desc{% else %}asc{% endif %}"}'>
-            Inventory Level
-            {% if current_sort == "inventory_level" %}
-              {% if current_dir == "desc" %}↓{% else %}↑{% endif %}
-            {% endif %}
-          </button>
-        </th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody id="component-table-body"
-           hx-get="{% url 'component_table' %}"
-           hx-trigger="load"
-           hx-swap="innerHTML">
-      <!-- Table rows injected here -->
-    </tbody>
-  </table>
+  <!-- Hidden sort inputs -->
+  <input type="hidden" name="sort" id="sort-field" value="{{ current_sort|default:'id' }}">
+  <input type="hidden" name="dir" id="sort-dir" value="{{ current_dir|default:'asc' }}">
+</form>
+
+<!-- Table headers -->
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <!-- Identifier column -->
+      <th style="cursor:pointer;"
+          hx-get="{% url 'component_table' %}"
+          hx-target="#component-table-body"
+          hx-swap="innerHTML"
+          hx-include="#table-controls"
+          onclick="
+            let sortInput = document.getElementById('sort-field');
+            let dirInput = document.getElementById('sort-dir');
+            if(sortInput.value==='identifier'){
+              dirInput.value = dirInput.value==='asc' ? 'desc' : 'asc';
+            } else {
+              sortInput.value='identifier';
+              dirInput.value='asc';
+            }
+          ">
+        Identifier ↑↓
+      </th>
+
+      <!-- Inventory Level column -->
+      <th style="cursor:pointer;"
+          hx-get="{% url 'component_table' %}"
+          hx-target="#component-table-body"
+          hx-swap="innerHTML"
+          hx-include="#table-controls"
+          onclick="
+            let sortInput = document.getElementById('sort-field');
+            let dirInput = document.getElementById('sort-dir');
+            if(sortInput.value==='inventory_level'){
+              dirInput.value = dirInput.value==='asc' ? 'desc' : 'asc';
+            } else {
+              sortInput.value='inventory_level';
+              dirInput.value='asc';
+            }
+          ">
+        Inventory Level ↑↓
+      </th>
+
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody id="component-table-body"
+         hx-get="{% url 'component_table' %}"
+         hx-trigger="load"
+         hx-swap="innerHTML">
+    <!-- Table rows injected here -->
+  </tbody>
+</table>
+
+
 
 </div>
 </body>
