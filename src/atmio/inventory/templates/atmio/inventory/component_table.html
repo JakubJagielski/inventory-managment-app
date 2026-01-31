@@ -4,5 +4,10 @@
   <td>{{ component.inventory_level.name }}</td>
   <td>{{ component.description }}</td>
 </tr>
+{% empty %}
+<tr>
+  <td colspan="3" class="text-center text-muted">
+    No components found
+  </td>
+</tr>
 {% endfor %}
-
