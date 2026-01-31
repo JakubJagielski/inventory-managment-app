@@ -1,0 +1,8 @@
+{% for component in components %}
+<tr>
+  <td>{{ component.identifier }}</td>
+  <td>{{ component.inventory_level.name }}</td>
+  <td>{{ component.description }}</td>
+</tr>
+{% endfor %}
+
