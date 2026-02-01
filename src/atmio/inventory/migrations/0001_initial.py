@@ -39,7 +39,7 @@ def seed_inventory(apps, schema_editor):
     all_levels = tanks + sections + pipelines + segments
 
     # Create components distributed randomly across levels
-    for i in range(1, 20):
+    for i in range(1, 50):
         level = random.choice(all_levels)
         Component.objects.create(
             identifier=f"C{i:04d}",
