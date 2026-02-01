@@ -1,34 +1,38 @@
-<div class="modal-header">
-    <h5 class="modal-title">Create Component</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-</div>
+<form hx-post="{% url 'component_create' %}" 
+      hx-target="#modal-body-container" 
+      hx-swap="innerHTML"
+      hx-include="#table-controls">
+    {% csrf_token %}
 
-<div class="modal-body">
-    <form hx-post="{% url 'component_create' %}" hx-target="#component-table-body" hx-swap="innerHTML"
-        hx-include="#table-controls">
-        {% csrf_token %}
+    {% if error_message %}
+    <div class="alert alert-danger">{{ error_message }}</div>
+    {% endif %}
 
-        <div class="mb-3">
-            <label for="id_identifier" class="form-label">Identifier</label>
-            <input type="text" name="identifier" id="id_identifier" class="form-control" required>
-        </div>
+    <div class="mb-3">
+        <label for="id_identifier">Identifier</label>
+        <input type="text" name="identifier" id="id_identifier" class="form-control"
+               required
+               value="{{ form_data.identifier|default:'' }}">
+    </div>
 
-        <div class="mb-3">
-            <label for="id_description" class="form-label">Description</label>
-            <input type="text" name="description" id="id_description" class="form-control">
-        </div>
+    <div class="mb-3">
+        <label for="id_description">Description</label>
+        <input type="text" name="description" id="id_description" class="form-control"
+               value="{{ form_data.description|default:'' }}">
+    </div>
 
-        <div class="mb-3">
-            <label for="id_inventory_level" class="form-label">Inventory Level</label>
-            <select name="inventory_level" id="id_inventory_level" class="form-select" required>
-                {% for lvl in inventory_levels %}
-                <option value="{{ lvl.id }}">{{ lvl.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
+    <div class="mb-3">
+        <label for="id_inventory_level">Inventory Level</label>
+        <select name="inventory_level" id="id_inventory_level" class="form-select" required>
+            {% for lvl in inventory_levels %}
+            <option value="{{ lvl.id }}" {% if lvl.id|stringformat:"s" == form_data.inventory_level|stringformat:"s" %}selected{% endif %}>
+                {{ lvl.name }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
 
-        <div class="d-flex justify-content-end mt-3">
-            <button type="submit" class="btn btn-success" data-bs-dismiss="modal">Create</button>
-        </div>
-    </form>
-</div>
+    <div class="d-flex justify-content-end mt-3">
+        <button type="submit" class="btn btn-success">Create</button>
+    </div>
+</form>

@@ -20,21 +20,36 @@
         <!-- Title + Create button -->
         <h1 class="d-flex justify-content-between align-items-center">
             Components
-            <button class="btn btn-primary" hx-get="{% url 'component_create' %}"
-                hx-target="#create-component-modal .modal-content" data-bs-toggle="modal"
+            <!-- Create Component Button -->
+            <button class="btn btn-primary"
+                hx-get="{% url 'component_create' %}"
+                hx-target="#modal-body-container"
+                hx-trigger="click"
+                data-bs-toggle="modal"
                 data-bs-target="#create-component-modal">
-                Create Component
-            </button>
+            Create Component
+        </button>
+
+
+
+
         </h1>
 
         <!-- Modal container -->
-        <div id="create-component-modal" class="modal fade" tabindex="-1">
+       <div id="create-component-modal" class="modal fade" tabindex="-1">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
-                    <!-- HTMX injects create form here -->
+                    <div class="modal-header">
+                        <h5 class="modal-title">Create Component</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="modal-body-container">
+                        <!-- HTMX injects form here -->
+                    </div>
                 </div>
             </div>
         </div>
+
 
         <!-- Table controls -->
         <form id="table-controls" hx-get="{% url 'component_table' %}" hx-target="#component-table-body"
@@ -100,14 +115,34 @@
                     <th>Description</th>
                 </tr>
             </thead>
-            <tbody id="component-table-body" hx-get="{% url 'component_table' %}" hx-trigger="load" hx-swap="innerHTML">
+            <tbody id="component-table-body"
+                hx-get="{% url 'component_table' %}"
+                hx-trigger="load"
+                hx-swap="innerHTML">
                 <!-- Table rows injected here -->
             </tbody>
+
         </table>
 
 
 
     </div>
 </body>
+
+<script>
+document.body.addEventListener('htmx:afterSwap', (event) => {
+    if (event.detail.xhr.getResponseHeader('HX-Trigger') === 'componentCreated') {
+        // Close modal
+        const modalEl = document.getElementById('create-component-modal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+
+        // Refresh table
+        htmx.ajax('GET', '{% url "component_table" %}', {target: '#component-table-body'});
+    }
+});
+</script>
+
+
 
 </html>

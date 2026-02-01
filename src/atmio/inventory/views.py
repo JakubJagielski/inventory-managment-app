@@ -2,6 +2,9 @@ from django.shortcuts import render
 from django.core.paginator import Paginator
 from .models import Component, InventoryLevel
 
+from django.db import IntegrityError
+from django.http import HttpResponse
+
 PAGINATION_LIMIT = 10
 
 
@@ -56,21 +59,38 @@ def component_create(request):
     inventory_levels = InventoryLevel.objects.all()
 
     if request.method == "POST":
-        identifier = request.POST.get("identifier")
-        description = request.POST.get("description")
-        level_id = request.POST.get("inventory_level")
+        identifier = request.POST.get("identifier", "")
+        description = request.POST.get("description", "")
+        level_id = request.POST.get("inventory_level", "")
 
-        Component.objects.create(
-            identifier=identifier,
-            description=description,
-            inventory_level_id=level_id,
-        )
+        try:
+            Component.objects.create(
+                identifier=identifier,
+                description=description,
+                inventory_level_id=level_id,
+            )
+        except IntegrityError:
+            return render(
+                request,
+                "atmio/inventory/component_form.html",
+                {
+                    "inventory_levels": inventory_levels,
+                    "error_message": "A component with this identifier already exists.",
+                    "form_data": {
+                        "identifier": identifier,
+                        "description": description,
+                        "inventory_level": level_id,
+                    }
+                }
+            )
 
-        # Return ONLY table rows (HTMX swap target)
-        return component_table(request)
+        # Success: empty response + trigger
+        response = HttpResponse('<div style="display:none;"></div>')
+        response["HX-Trigger"] = "componentCreated"
+        return response
 
     return render(
         request,
         "atmio/inventory/component_form.html",
-        {"inventory_levels": inventory_levels},
+        {"inventory_levels": inventory_levels, "form_data": {}}
     )
