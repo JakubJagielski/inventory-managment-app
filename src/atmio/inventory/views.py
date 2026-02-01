@@ -19,8 +19,6 @@ def component_list(request):
         {"inventory_levels": inventory_levels},
     )
 
-
-
 def component_table(request):
     sort = _get_or_post_query_param(request, key="sort") or "id"
     direction = _get_or_post_query_param(request, key="dir") or "asc"
@@ -35,13 +33,33 @@ def component_table(request):
 
     qs = Component.objects.select_related("inventory_level").all()
 
+    # Filter by identifier
     if filter_identifier:
         qs = qs.filter(identifier__icontains=filter_identifier)
-    if filter_inventory_level:
-        qs = qs.filter(inventory_level_id=filter_inventory_level)
 
+    # Optimized hierarchical inventory level filtering
+    if filter_inventory_level:
+        # Prefetch all levels in one query
+        all_levels = InventoryLevel.objects.all()
+        level_map = {}
+        for lvl in all_levels:
+            level_map.setdefault(lvl.parent_id, []).append(lvl.id)
+
+        # Recursive function in memory
+        def get_descendants(level_id):
+            ids = [int(level_id)]
+            for child_id in level_map.get(int(level_id), []):
+                ids.extend(get_descendants(child_id))
+            return ids
+
+        # Get all relevant level IDs
+        level_ids = get_descendants(filter_inventory_level)
+        qs = qs.filter(inventory_level_id__in=level_ids)
+
+    # Apply sorting
     qs = qs.order_by(order_by)
 
+    # Pagination
     paginator = Paginator(qs, PAGINATION_LIMIT)
     page_obj = paginator.get_page(page_number)
 
@@ -53,6 +71,7 @@ def component_table(request):
         "current_filter_identifier": filter_identifier,
         "current_inventory_level": filter_inventory_level
     })
+
 
 
 def component_create(request):

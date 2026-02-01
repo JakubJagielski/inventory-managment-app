@@ -83,34 +83,10 @@
             <thead>
                 <tr>
                     <!-- Identifier column -->
-                    <th style="cursor:pointer;" hx-get="{% url 'component_table' %}" hx-target="#component-table-body"
-                        hx-swap="innerHTML" hx-include="#table-controls" onclick="
-            let sortInput = document.getElementById('sort-field');
-            let dirInput = document.getElementById('sort-dir');
-            if(sortInput.value==='identifier'){
-              dirInput.value = dirInput.value==='asc' ? 'desc' : 'asc';
-            } else {
-              sortInput.value='identifier';
-              dirInput.value='asc';
-            }
-          ">
-                        Identifier ↑↓
-                    </th>
+                    
+                <th style="cursor:pointer;" onclick="sortTable('identifier')">Identifier ↑↓</th>
+                <th style="cursor:pointer;" onclick="sortTable('inventory_level')">Inventory Level ↑↓</th>
 
-                    <!-- Inventory Level column -->
-                    <th style="cursor:pointer;" hx-get="{% url 'component_table' %}" hx-target="#component-table-body"
-                        hx-swap="innerHTML" hx-include="#table-controls" onclick="
-            let sortInput = document.getElementById('sort-field');
-            let dirInput = document.getElementById('sort-dir');
-            if(sortInput.value==='inventory_level'){
-              dirInput.value = dirInput.value==='asc' ? 'desc' : 'asc';
-            } else {
-              sortInput.value='inventory_level';
-              dirInput.value='asc';
-            }
-          ">
-                        Inventory Level ↑↓
-                    </th>
 
                     <th>Description</th>
                 </tr>
@@ -134,5 +110,20 @@
         }
     });
     </script>
+
+    <script>
+        function sortTable(column) {
+        const sortInput = document.getElementById('sort-field');
+        const dirInput = document.getElementById('sort-dir');
+        if(sortInput.value === column){
+            dirInput.value = dirInput.value === 'asc' ? 'desc' : 'asc';
+        } else {
+            sortInput.value = column;
+            dirInput.value = 'asc';
+        }
+        document.getElementById('table-controls').dispatchEvent(new Event('change'));
+        }
+    </script>
+
 </body>
 </html>
