@@ -86,7 +86,7 @@ def component_create(request):
 
         # Success: empty response + trigger
         response = HttpResponse('<div style="display:none;"></div>')
-        response["HX-Trigger"] = "componentCreated"
+        response["HX-Trigger"] = "inventoryUpdated"
         return response
 
     return render(

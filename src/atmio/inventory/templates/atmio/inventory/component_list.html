@@ -117,32 +117,22 @@
             </thead>
             <tbody id="component-table-body"
                 hx-get="{% url 'component_table' %}"
-                hx-trigger="load"
+                hx-include="#table-controls"
+                hx-trigger="load, inventoryUpdated from:body"
                 hx-swap="innerHTML">
                 <!-- Table rows injected here -->
             </tbody>
-
         </table>
-
-
-
     </div>
+    <script>
+    document.body.addEventListener('htmx:afterSwap', (event) => {
+        if (event.detail.xhr.getResponseHeader('HX-Trigger') === 'inventoryUpdated') {
+            // Close modal via Bootstrap
+            const modalEl = document.getElementById('create-component-modal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+        }
+    });
+    </script>
 </body>
-
-<script>
-document.body.addEventListener('htmx:afterSwap', (event) => {
-    if (event.detail.xhr.getResponseHeader('HX-Trigger') === 'componentCreated') {
-        // Close modal
-        const modalEl = document.getElementById('create-component-modal');
-        const modal = bootstrap.Modal.getInstance(modalEl);
-        if (modal) modal.hide();
-
-        // Refresh table
-        htmx.ajax('GET', '{% url "component_table" %}', {target: '#component-table-body'});
-    }
-});
-</script>
-
-
-
 </html>
