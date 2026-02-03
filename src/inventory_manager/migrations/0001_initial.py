@@ -5,28 +5,56 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='InventoryLevel',
+            name="InventoryLevel",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('parent', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='inventory_manager.inventorylevel')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                (
+                    "parent",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="inventory_manager.inventorylevel",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Component',
+            name="Component",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('identifier', models.CharField(max_length=100, unique=True)),
-                ('description', models.TextField(blank=True)),
-                ('inventory_level', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='inventory_manager.inventorylevel')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("identifier", models.CharField(max_length=100, unique=True)),
+                ("description", models.TextField(blank=True)),
+                (
+                    "inventory_level",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="inventory_manager.inventorylevel",
+                    ),
+                ),
             ],
         ),
     ]

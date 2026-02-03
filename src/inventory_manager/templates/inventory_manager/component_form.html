@@ -1,11 +1,11 @@
-<form hx-post="{% url 'component_create' %}" 
-      hx-target="#modal-body-container" 
+<form hx-post="{% url 'component_create' %}"
+      hx-target="#modal-body-container"
       hx-swap="innerHTML"
       hx-include="#table-controls">
     {% csrf_token %}
 
     {% if error_message %}
-    <div class="alert alert-danger">{{ error_message }}</div>
+        <div class="alert alert-danger">{{ error_message }}</div>
     {% endif %}
 
     <div class="mb-3">
@@ -25,9 +25,9 @@
         <label for="id_inventory_level">Inventory Level</label>
         <select name="inventory_level" id="id_inventory_level" class="form-select" required>
             {% for lvl in inventory_levels %}
-            <option value="{{ lvl.id }}" {% if lvl.id|stringformat:"s" == form_data.inventory_level|stringformat:"s" %}selected{% endif %}>
-                {{ lvl.name }}
-            </option>
+                <option value="{{ lvl.id }}" {% if lvl.id|stringformat:"s" == form_data.inventory_level|stringformat:"s" %}selected{% endif %}>
+                    {{ lvl.name }}
+                </option>
             {% endfor %}
         </select>
     </div>

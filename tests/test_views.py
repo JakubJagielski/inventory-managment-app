@@ -1,10 +1,12 @@
 import pytest
 from django.urls import reverse
-from inventory_manager.models import Component, InventoryLevel
+from inventory_manager.models import Component
 
 
 @pytest.mark.django_db
-def test_component_table_identifier_filter(client, fake_component_1, fake_component_2, fake_component_3):
+def test_component_table_identifier_filter(
+    client, fake_component_1, fake_component_2, fake_component_3
+):
     """
     Given I have multiple components in the database
     When I request the components table
@@ -32,8 +34,16 @@ def test_component_table_identifier_filter(client, fake_component_1, fake_compon
     for c in ["FAKE_COMPONENT_1", "FAKE_COMPONENT_2", "FAKE_COMPONENT_3"]:
         assert c in content
 
+
 @pytest.mark.django_db
-def test_component_table_inventory_level_filter(client, fake_component_1, fake_component_2, fake_component_3, fake_inventory_level_1, fake_inventory_level_2):
+def test_component_table_inventory_level_filter(
+    client,
+    fake_component_1,
+    fake_component_2,
+    fake_component_3,
+    fake_inventory_level_1,
+    fake_inventory_level_2,
+):
     """
     Given I have components assigned to multiple inventory levels
     When I filter by inventory level 1
@@ -60,45 +70,19 @@ def test_component_table_inventory_level_filter(client, fake_component_1, fake_c
 
 
 @pytest.mark.django_db
-def test_component_table_sorting(client, fake_component_1, fake_component_2, fake_component_3):
-    """
-    Given I have multiple components
-    When I sort by identifier ascending
-    Then the components should appear in ascending identifier order
-    """
-    url = reverse("component_table")
-    response = client.get(url, {"sort": "identifier", "dir": "asc"})
-    content = response.content.decode()
-    idx1 = content.find("FAKE_COMPONENT_1")
-    idx2 = content.find("FAKE_COMPONENT_2")
-    idx3 = content.find("FAKE_COMPONENT_3")
-    assert idx1 < idx2 < idx3
-
-    """
-    Given I have multiple components
-    When I sort by identifier descending
-    Then the components should appear in descending identifier order
-    """
-    response = client.get(url, {"sort": "identifier", "dir": "desc"})
-    content = response.content.decode()
-    idx1 = content.find("FAKE_COMPONENT_1")
-    idx2 = content.find("FAKE_COMPONENT_2")
-    idx3 = content.find("FAKE_COMPONENT_3")
-    assert idx3 < idx2 < idx1
-
-
-@pytest.mark.django_db
-def test_component_table_combined_filters(client, fake_component_1, fake_component_2, fake_component_3, fake_inventory_level_1):
+def test_component_table_combined_filters(
+    client, fake_component_1, fake_component_2, fake_component_3, fake_inventory_level_1
+):
     """
     Given I have multiple components across different inventory levels
     When I filter by inventory level 1 and identifier containing '2'
     Then only components that match both criteria should appear
     """
     url = reverse("component_table")
-    response = client.get(url, {
-        "filter_inventory_level": fake_inventory_level_1.id,
-        "filter_identifier": "2"
-    })
+    response = client.get(
+        url,
+        {"filter_inventory_level": fake_inventory_level_1.id, "filter_identifier": "2"},
+    )
     content = response.content.decode()
 
     assert "FAKE_COMPONENT_2" in content
@@ -107,14 +91,18 @@ def test_component_table_combined_filters(client, fake_component_1, fake_compone
 
 
 @pytest.mark.django_db
-def test_component_table_sorting(client, fake_component_1, fake_component_2, fake_component_3):
+def test_component_table_sorting(
+    client, fake_component_1, fake_component_2, fake_component_3
+):
     """
     Given I have multiple components
     When I sort by identifier ascending
     Then the components should appear in ascending identifier order
     """
     url = reverse("component_table")
-    response = client.get(url, {"sort": "identifier", "dir": "asc", "filter_identifier": "FAKE_COMPONENT"})
+    response = client.get(
+        url, {"sort": "identifier", "dir": "asc", "filter_identifier": "FAKE_COMPONENT"}
+    )
     content = response.content.decode()
     idx1 = content.find("FAKE_COMPONENT_1")
     idx2 = content.find("FAKE_COMPONENT_2")
@@ -126,7 +114,10 @@ def test_component_table_sorting(client, fake_component_1, fake_component_2, fak
     When I sort by identifier descending
     Then the components should appear in descending identifier order
     """
-    response = client.get(url, {"sort": "identifier", "dir": "desc", "filter_identifier": "FAKE_COMPONENT"})
+    response = client.get(
+        url,
+        {"sort": "identifier", "dir": "desc", "filter_identifier": "FAKE_COMPONENT"},
+    )
     content = response.content.decode()
     idx1 = content.find("FAKE_COMPONENT_1")
     idx2 = content.find("FAKE_COMPONENT_2")
@@ -135,7 +126,9 @@ def test_component_table_sorting(client, fake_component_1, fake_component_2, fak
 
 
 @pytest.mark.django_db
-def test_component_table_filter_and_sort(client, fake_component_1, fake_component_2, fake_component_3, fake_inventory_level_1):
+def test_component_table_filter_and_sort(
+    client, fake_component_1, fake_component_2, fake_component_3, fake_inventory_level_1
+):
     """
     Given I have multiple components in the database
     When I filter by inventory level 1
@@ -145,12 +138,15 @@ def test_component_table_filter_and_sort(client, fake_component_1, fake_componen
     """
     url = reverse("component_table")
 
-    response = client.get(url, {
-        "filter_identifier": "FAKE_COMPONENT",
-        "filter_inventory_level": fake_inventory_level_1.id,
-        "sort": "identifier",
-        "dir": "asc"
-    })
+    response = client.get(
+        url,
+        {
+            "filter_identifier": "FAKE_COMPONENT",
+            "filter_inventory_level": fake_inventory_level_1.id,
+            "sort": "identifier",
+            "dir": "asc",
+        },
+    )
     content = response.content.decode()
 
     # Only components from inventory_level_1
@@ -170,12 +166,15 @@ def test_component_table_filter_and_sort(client, fake_component_1, fake_componen
     Then only components from inventory level 1 should appear
     And they should be sorted by identifier descending
     """
-    response = client.get(url, {
-        "filter_identifier": "FAKE_COMPONENT",
-        "filter_inventory_level": fake_inventory_level_1.id,
-        "sort": "identifier",
-        "dir": "desc"
-    })
+    response = client.get(
+        url,
+        {
+            "filter_identifier": "FAKE_COMPONENT",
+            "filter_inventory_level": fake_inventory_level_1.id,
+            "sort": "identifier",
+            "dir": "desc",
+        },
+    )
     content = response.content.decode()
 
     # Only components from inventory_level_1
@@ -205,7 +204,6 @@ def test_component_create_success(client, fake_inventory_level_1):
     }
 
     response = client.post(url, data)
-    content = response.content.decode()
 
     # Component should exist
     comp = Component.objects.get(identifier="FAKE_COMPONENT_NEW")
@@ -217,7 +215,9 @@ def test_component_create_success(client, fake_inventory_level_1):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_component_create_duplicate_identifier_view(client, fake_component_1, fake_inventory_level_1):
+def test_component_create_duplicate_identifier_view(
+    client, fake_component_1, fake_inventory_level_1
+):
     """
     Given I have a component with identifier 'FAKE_COMPONENT_1'
     When I POST a new component with the same identifier to the create endpoint

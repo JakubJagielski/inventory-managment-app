@@ -1,7 +1,7 @@
 from django.db import migrations
-from django.db import models
 
 import random
+
 
 def seed_inventory(apps, schema_editor):
     # Get models via apps.get_model
@@ -20,21 +20,25 @@ def seed_inventory(apps, schema_editor):
     # Level 2: Each tank has sections
     sections = []
     for tank in tanks:
-        for j in range(1, 3): 
-            section = InventoryLevel.objects.create(name=f"{tank.name} Section {j}", parent=tank)
+        for j in range(1, 3):
+            section = InventoryLevel.objects.create(
+                name=f"{tank.name} Section {j}", parent=tank
+            )
             sections.append(section)
 
     # Level 1: Pipelines
     pipelines = []
-    for i in range(1, 2): 
+    for i in range(1, 2):
         pipe = InventoryLevel.objects.create(name=f"Pipeline {i}", parent=root)
         pipelines.append(pipe)
 
     # Level 2: Each pipeline has segments
     segments = []
     for pipe in pipelines:
-        for j in range(1, 3): 
-            segment = InventoryLevel.objects.create(name=f"{pipe.name} Segment {j}", parent=pipe)
+        for j in range(1, 3):
+            segment = InventoryLevel.objects.create(
+                name=f"{pipe.name} Segment {j}", parent=pipe
+            )
             segments.append(segment)
 
     all_levels = tanks + sections + pipelines + segments
@@ -45,13 +49,14 @@ def seed_inventory(apps, schema_editor):
         Component.objects.create(
             identifier=f"C{i:04d}",
             description=f"Component {i} in {level.name}",
-            inventory_level=level
+            inventory_level=level,
         )
-        
+
+
 class Migration(migrations.Migration):
     dependencies = [
-            ('inventory_manager', '0001_initial'),
-        ]
+        ("inventory_manager", "0001_initial"),
+    ]
 
     operations = [
         migrations.RunPython(seed_inventory),
