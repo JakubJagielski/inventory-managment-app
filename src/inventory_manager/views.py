@@ -15,7 +15,7 @@ def component_list(request):
     inventory_levels = InventoryLevel.objects.all()
     return render(
         request,
-        "atmio/inventory/component_list.html",
+        "inventory_manager/component_list.html",
         {"inventory_levels": inventory_levels},
     )
 
@@ -63,7 +63,7 @@ def component_table(request):
     paginator = Paginator(qs, PAGINATION_LIMIT)
     page_obj = paginator.get_page(page_number)
 
-    return render(request, "atmio/inventory/component_table.html", {
+    return render(request, "inventory_manager/component_table.html", {
         "components": page_obj.object_list,
         "page_obj": page_obj,
         "current_sort": sort,
@@ -91,7 +91,7 @@ def component_create(request):
         except IntegrityError:
             return render(
                 request,
-                "atmio/inventory/component_form.html",
+                "inventory_manager/component_form.html",
                 {
                     "inventory_levels": inventory_levels,
                     "error_message": "A component with this identifier already exists.",
@@ -110,6 +110,6 @@ def component_create(request):
 
     return render(
         request,
-        "atmio/inventory/component_form.html",
+        "inventory_manager/component_form.html",
         {"inventory_levels": inventory_levels, "form_data": {}}
     )

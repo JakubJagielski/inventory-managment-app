@@ -1,15 +1,7 @@
 import pytest
-from django.urls import reverse
-from atmio.inventory.models import Component, InventoryLevel
-
-import pytest
+from inventory_manager.models import Component, InventoryLevel
 from django.conf import settings
-import tempfile
-from django.db import connections
-from django.db.migrations.executor import MigrationExecutor
 
-import pytest
-from django.conf import settings
 
 @pytest.fixture(scope="session", autouse=True)
 def use_test_db():

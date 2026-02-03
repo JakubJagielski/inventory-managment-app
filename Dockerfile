@@ -14,4 +14,4 @@ ENV PYTHONPATH=src
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python src/manage.py makemigrations inventory && python src/manage.py migrate && python src/manage.py runserver 0.0.0.0:8000"]
+CMD ["sh", "-c", "python src/manage.py makemigrations inventory_manager && python src/manage.py migrate && python src/manage.py runserver 0.0.0.0:8000"]

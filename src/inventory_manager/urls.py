@@ -1,5 +1,5 @@
 from django.urls import path
-from atmio.inventory import views
+from inventory_manager import views
 
 urlpatterns = [
     path("", views.component_list, name="component_list"),

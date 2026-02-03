@@ -5,8 +5,8 @@ import random
 
 def seed_inventory(apps, schema_editor):
     # Get models via apps.get_model
-    InventoryLevel = apps.get_model("inventory", "InventoryLevel")
-    Component = apps.get_model("inventory", "Component")
+    InventoryLevel = apps.get_model("inventory_manager", "InventoryLevel")
+    Component = apps.get_model("inventory_manager", "Component")
 
     # Root
     root = InventoryLevel.objects.create(name="Main Facility")
@@ -50,7 +50,7 @@ def seed_inventory(apps, schema_editor):
         
 class Migration(migrations.Migration):
     dependencies = [
-            ('inventory', '0002_alter_component_id_alter_component_inventory_level_and_more'),
+            ('inventory_manager', '0001_initial'),
         ]
 
     operations = [

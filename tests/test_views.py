@@ -1,6 +1,6 @@
 import pytest
 from django.urls import reverse
-from atmio.inventory.models import Component
+from inventory_manager.models import Component, InventoryLevel
 
 
 @pytest.mark.django_db
@@ -187,11 +187,6 @@ def test_component_table_filter_and_sort(client, fake_component_1, fake_componen
     idx1 = content.find("FAKE_COMPONENT_1")
     idx2 = content.find("FAKE_COMPONENT_2")
     assert idx2 < idx1
-
-import pytest
-from django.urls import reverse
-from django.db import IntegrityError
-from atmio.inventory.models import Component, InventoryLevel
 
 
 @pytest.mark.django_db
