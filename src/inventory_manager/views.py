@@ -1,15 +1,14 @@
 from django.shortcuts import render
-from django.core.paginator import Paginator
-from .models import Component, InventoryLevel
-
-from django.db import IntegrityError
+from django.views.generic import CreateView
+from django.views.generic import ListView
 from django.http import HttpResponse
 
+from inventory_manager.models import Component, InventoryLevel
+from inventory_manager.services.inventory import get_descendant_inventory_level_ids
+from inventory_manager.forms import ComponentForm
+
+
 PAGINATION_LIMIT = 10
-
-
-def _get_or_post_query_param(request, key: str) -> str | None:
-    return request.GET.get(key) or request.POST.get(key)
 
 
 def component_list(request):
@@ -21,102 +20,67 @@ def component_list(request):
     )
 
 
-def component_table(request):
-    sort = _get_or_post_query_param(request, key="sort") or "id"
-    direction = _get_or_post_query_param(request, key="dir") or "asc"
-    filter_identifier = _get_or_post_query_param(request, key="filter_identifier") or ""
-    filter_inventory_level = (
-        _get_or_post_query_param(request, key="filter_inventory_level") or ""
-    )
-    page_number = _get_or_post_query_param(request, key="page") or 1
+class ComponentTableView(ListView):
+    model = Component
+    template_name = "inventory_manager/component_table.html"
+    context_object_name = "components"
+    paginate_by = PAGINATION_LIMIT
 
-    sort_map = {"identifier": "identifier", "inventory_level": "inventory_level__name"}
-    order_by = sort_map.get(sort, "id")
-    if direction == "desc":
-        order_by = f"-{order_by}"
+    SORT_MAP = {
+        "identifier": "identifier",
+        "inventory_level": "inventory_level__name",
+    }
 
-    qs = Component.objects.select_related("inventory_level").all()
+    def get_queryset(self):
+        request = self.request
 
-    # Filter by identifier
-    if filter_identifier:
-        qs = qs.filter(identifier__icontains=filter_identifier)
+        sort = request.GET.get("sort", "id")
+        direction = request.GET.get("dir", "asc")
+        filter_identifier = request.GET.get("filter_identifier", "")
+        filter_inventory_level = request.GET.get("filter_inventory_level")
 
-    # Optimized hierarchical inventory level filtering
-    if filter_inventory_level:
-        # Prefetch all levels in one query
-        all_levels = InventoryLevel.objects.all()
-        level_map = {}
-        for lvl in all_levels:
-            level_map.setdefault(lvl.parent_id, []).append(lvl.id)
+        order_by = self.SORT_MAP.get(sort, "id")
+        if direction == "desc":
+            order_by = f"-{order_by}"
 
-        # Recursive function in memory
-        def get_descendants(level_id):
-            ids = [int(level_id)]
-            for child_id in level_map.get(int(level_id), []):
-                ids.extend(get_descendants(child_id))
-            return ids
+        qs = Component.objects.select_related("inventory_level").order_by(order_by)
 
-        # Get all relevant level IDs
-        level_ids = get_descendants(filter_inventory_level)
-        qs = qs.filter(inventory_level_id__in=level_ids)
+        if filter_identifier:
+            qs = qs.filter(identifier__icontains=filter_identifier)
 
-    # Apply sorting
-    qs = qs.order_by(order_by)
-
-    # Pagination
-    paginator = Paginator(qs, PAGINATION_LIMIT)
-    page_obj = paginator.get_page(page_number)
-
-    return render(
-        request,
-        "inventory_manager/component_table.html",
-        {
-            "components": page_obj.object_list,
-            "page_obj": page_obj,
-            "current_sort": sort,
-            "current_dir": direction,
-            "current_filter_identifier": filter_identifier,
-            "current_inventory_level": filter_inventory_level,
-        },
-    )
-
-
-def component_create(request):
-    inventory_levels = InventoryLevel.objects.all()
-
-    if request.method == "POST":
-        identifier = request.POST.get("identifier", "")
-        description = request.POST.get("description", "")
-        level_id = request.POST.get("inventory_level", "")
-
-        try:
-            Component.objects.create(
-                identifier=identifier,
-                description=description,
-                inventory_level_id=level_id,
-            )
-        except IntegrityError:
-            return render(
-                request,
-                "inventory_manager/component_form.html",
-                {
-                    "inventory_levels": inventory_levels,
-                    "error_message": "A component with this identifier already exists.",
-                    "form_data": {
-                        "identifier": identifier,
-                        "description": description,
-                        "inventory_level": level_id,
-                    },
-                },
+        if filter_inventory_level:
+            qs = qs.filter(
+                inventory_level_id__in=get_descendant_inventory_level_ids(
+                    int(filter_inventory_level)
+                )
             )
 
-        # Success: empty response + trigger
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        request = self.request
+
+        ctx.update(
+            {
+                "current_sort": request.GET.get("sort", "id"),
+                "current_dir": request.GET.get("dir", "asc"),
+                "current_filter_identifier": request.GET.get("filter_identifier", ""),
+                "current_inventory_level": request.GET.get(
+                    "filter_inventory_level", ""
+                ),
+            }
+        )
+        return ctx
+
+
+class ComponentCreateView(CreateView):
+    model = Component
+    form_class = ComponentForm
+    template_name = "inventory_manager/component_form.html"
+
+    def form_valid(self, form):
+        self.object = form.save()
         response = HttpResponse('<div style="display:none;"></div>')
         response["HX-Trigger"] = "inventoryUpdated"
         return response
-
-    return render(
-        request,
-        "inventory_manager/component_form.html",
-        {"inventory_levels": inventory_levels, "form_data": {}},
-    )

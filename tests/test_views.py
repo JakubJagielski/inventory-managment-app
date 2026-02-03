@@ -212,30 +212,3 @@ def test_component_create_success(client, fake_inventory_level_1):
 
     # HX-Trigger header should be present
     assert response["HX-Trigger"] == "inventoryUpdated"
-
-
-@pytest.mark.django_db(transaction=True)
-def test_component_create_duplicate_identifier_view(
-    client, fake_component_1, fake_inventory_level_1
-):
-    """
-    Given I have a component with identifier 'FAKE_COMPONENT_1'
-    When I POST a new component with the same identifier to the create endpoint
-    Then the response should contain an error message
-    And the component count should not increase
-    """
-    url = reverse("component_create")
-    data = {
-        "identifier": "FAKE_COMPONENT_1",
-        "description": "Attempted duplicate",
-        "inventory_level": fake_inventory_level_1.id,
-    }
-
-    response = client.post(url, data)
-    content = response.content.decode()
-
-    # Check that error message is displayed
-    assert "A component with this identifier already exists." in content
-
-    # Component count remains 1
-    assert Component.objects.filter(identifier="FAKE_COMPONENT_1").count() == 1

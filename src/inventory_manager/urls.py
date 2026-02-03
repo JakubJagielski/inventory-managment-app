@@ -1,8 +1,12 @@
 from django.urls import path
-from inventory_manager import views
+from inventory_manager.views import (
+    ComponentTableView,
+    ComponentCreateView,
+    component_list,
+)
 
 urlpatterns = [
-    path("", views.component_list, name="component_list"),
-    path("table/", views.component_table, name="component_table"),
-    path("create/", views.component_create, name="component_create"),
+    path("", component_list, name="component_list"),
+    path("table/", ComponentTableView.as_view(), name="component_table"),
+    path("create/", ComponentCreateView.as_view(), name="component_create"),
 ]
